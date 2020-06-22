@@ -1,4 +1,5 @@
 const User = require('../../db-init/UserSchema');
+const newToken = require('../../middlewares/token');
 
 exports.getAllUser = async (req, res) => {
   const allUsers = await User.find();
@@ -34,6 +35,26 @@ exports.createNewUser = async (req, res) => {
       data: newUser,
       message: 'User Created Succesfully'
     });
+  }
+}
+
+exports.loginUser = async (req, res) => {
+  const userDetails = await User.findOne({email: req.body.email});
+  if(userDetails) {
+    const payload = {
+      name: userDetails.name,
+      _id: userDetails._id,
+      email: userDetails.email
+    }
+    let token = newToken.generateToken(payload);
+    res.status(200).json({
+      data: token,
+      message: "Login Successful"
+    })
+  } else {
+    res.status(401).json({
+      message: "User Not Found"
+    })
   }
 }
 
