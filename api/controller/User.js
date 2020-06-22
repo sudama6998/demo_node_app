@@ -1,5 +1,7 @@
 const User = require('../../db-init/UserSchema');
 const newToken = require('../../middlewares/token');
+const bcrypt = require('bcrypt');
+const decrypt = require('../../middlewares/decryption');
 
 exports.getAllUser = async (req, res) => {
   const allUsers = await User.find();
@@ -26,7 +28,7 @@ exports.createNewUser = async (req, res) => {
     const newUser = await User.create({
       name : req.body.name,
       email: req.body.email,
-      password: req.body.password,
+      password: await bcrypt.hash(req.body.password, 10),
       address: req.body.address,
       contact: req.body.contact,
       subjects: req.body.subjects
@@ -41,18 +43,25 @@ exports.createNewUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   const userDetails = await User.findOne({email: req.body.email});
   if(userDetails) {
-    const payload = {
-      name: userDetails.name,
-      _id: userDetails._id,
-      email: userDetails.email
+    let isPwdMatched = bcrypt.compareSync(req.body.password, userDetails.password);
+    if(!isPwdMatched) {
+      res.status(400).json({
+        message: "Invalid Password"
+      })
+    } else {
+      const payload = {
+        name: userDetails.name,
+        _id: userDetails._id,
+        email: userDetails.email
+      }
+      let token = newToken.generateToken(payload);
+      res.status(200).json({
+        data: token,
+        message: "Login Successful"
+      })
     }
-    let token = newToken.generateToken(payload);
-    res.status(200).json({
-      data: token,
-      message: "Login Successful"
-    })
   } else {
-    res.status(401).json({
+    res.status(400).json({
       message: "User Not Found"
     })
   }

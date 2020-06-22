@@ -7,12 +7,12 @@ route.get('/all', auth, UserController.getAllUser);
 
 route.post('/newuser', UserController.createNewUser);
 
-route.get('/byid/:email', UserController.getUserByEmail);
+route.get('/byid/:email', auth, UserController.getUserByEmail);
 
-route.put('/update', UserController.updateUser);
+route.put('/update', auth, UserController.updateUser);
 
 route.post('/login', UserController.loginUser);
 
-route.delete('/delete/:email', UserController.deleteUser)
+route.delete('/delete/:email', auth, UserController.deleteUser)
 
 module.exports = route;
